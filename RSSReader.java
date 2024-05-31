@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class RSSReader {
+    
     private static final String DATA_FILE = "data.txt";
     private static final int MAX_ITEMS = 5;
 
@@ -22,6 +23,7 @@ public class RSSReader {
         Scanner scanner = new Scanner(System.in);
         List<String> rssList = loadRssList();
 
+        
         while (true) {
             System.out.println("Enter a number to choose an action:");
             System.out.println("1: Add new RSS feed");
@@ -94,8 +96,12 @@ public class RSSReader {
     private static void removeRssFeed(Scanner scanner, List<String> rssList) {
         System.out.println("Enter the name or URL of the website to remove:");
         String target = scanner.nextLine();
-        rssList.removeIf(rss -> rss.contains(target));
-        System.out.println("RSS feed removed successfully.");
+        boolean removed = rssList.removeIf(rss -> rss.contains(target));
+        if (removed) {
+            System.out.println("RSS feed removed successfully.");
+        } else {
+            System.out.println("No matching RSS feed found.");
+        }
     }
 
     private static void displayRssItems(Scanner scanner, List<String> rssList) {
@@ -149,13 +155,12 @@ public class RSSReader {
             String rssXml = fetchPageSource(rssUrl);
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            StringBuilder xmlStringBuilder = new StringBuilder();
-            xmlStringBuilder.append(rssXml);
-            ByteArrayInputStream input = new ByteArrayInputStream(xmlStringBuilder.toString().getBytes("UTF-8"));
+            ByteArrayInputStream input = new ByteArrayInputStream(rssXml.getBytes("UTF-8"));
             org.w3c.dom.Document doc = documentBuilder.parse(input);
             NodeList itemNodes = doc.getElementsByTagName("item");
 
-            for (int i = 0; i < MAX_ITEMS; ++i) {
+            
+            for (int i = 0; i < Math.min(MAX_ITEMS, itemNodes.getLength()); ++i) {
                 Node itemNode = itemNodes.item(i);
                 if (itemNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element element = (Element) itemNode;
